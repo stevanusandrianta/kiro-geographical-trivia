@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capital City Guessing Game</title>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">🌍 Capital Quiz</h1>
+            <p class="game-subtitle">Test your geography knowledge!</p>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="start-screen">
+            <p class="start-description">
+                Welcome to the Capital City Guessing Game! 🎯<br><br>
+                You'll be shown a country and need to guess its capital city. 
+                If you get stuck, you can request hints to help you learn.<br><br>
+                <strong>Scoring:</strong><br>
+                • 3 points for correct answer without hints<br>
+                • 2 points for correct answer after 1 hint<br>
+                • 1 point for correct answer after 2+ hints<br>
+                • 0 points for incorrect answers
+            </p>
+            <button class="btn btn-primary" onclick="startGame()">Start Playing! 🚀</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" style="display: none;">
+            <!-- Score Display -->
+            <div class="score-display">
+                <div class="score-item">
+                    <div class="score-value" id="current-score">0</div>
+                    <div class="score-label">Score</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value" id="questions-answered">0</div>
+                    <div class="score-label">Questions</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value" id="score-percentage">0%</div>
+                    <div class="score-label">Efficiency</div>
+                </div>
+            </div>
+
+            <!-- Question Section -->
+            <div class="question-section">
+                <div class="country-display">
+                    <div class="country-flag" id="country-flag">🏳️</div>
+                    <div class="country-name" id="country-name">Loading...</div>
+                </div>
+                <p class="question-text">What is the capital city of this country?</p>
+                
+                <input type="text" 
+                       class="answer-input" 
+                       id="answer-input" 
+                       placeholder="Enter the capital city...">
+                
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="submitAnswer()">Submit Answer</button>
+                    <button class="btn btn-hint" id="hint-btn" onclick="requestHint()">Get Hint (3 left)</button>
+                    <button class="btn btn-secondary" onclick="skipQuestion()">Skip Question</button>
+                </div>
+            </div>
+
+            <!-- Hints Section -->
+            <div id="hints-section" class="hints-section" style="display: none;">
+                <div class="hints-title">💡 Hints:</div>
+                <div id="hints-list"></div>
+            </div>
+
+            <!-- Feedback Section -->
+            <div id="feedback-section" class="feedback-section"></div>
+
+            <!-- Country Trivia Section -->
+            <div id="trivia-section" class="trivia-section" style="display: none;">
+                <div class="trivia-title">🌍 Country Facts</div>
+                <div id="trivia-content"></div>
+            </div>
+
+            <!-- Achievements Section -->
+            <div id="achievements-section" class="achievements" style="display: none;"></div>
+
+            <!-- Game Controls -->
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="nextQuestion()" id="next-btn" style="display: none;">Next Question</button>
+                <button class="btn btn-secondary" onclick="endGame()">End Game</button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="game-over" style="display: none;">
+            <h2>🎉 Game Complete!</h2>
+            <div class="final-score" id="final-score">Final Score: 0/0</div>
+            <div id="game-summary"></div>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="startNewGame()">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
