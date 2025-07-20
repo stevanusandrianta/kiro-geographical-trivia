@@ -7,12 +7,20 @@ export enum GameStatus {
   ENDED = 'ended'
 }
 
+// Quiz categories
+export enum QuizCategory {
+  COUNTRY_TO_CAPITAL = 'country_to_capital',
+  CAPITAL_TO_COUNTRY = 'capital_to_country',
+  FLAG_TO_COUNTRY = 'flag_to_country',
+  RANDOM = 'random'
+}
+
 // Scoring constants
 export const SCORING = {
-  CORRECT_FIRST_TRY: 3,
-  CORRECT_AFTER_ONE_HINT: 2,
-  CORRECT_AFTER_MULTIPLE_HINTS: 1,
-  INCORRECT_AFTER_ALL_HINTS: 0,
+  MAX_TIME_BONUS: 5,
+  BASE_SCORE: 2,
+  HINT_PENALTY: 1,
+  TIME_LIMIT: 10, // seconds
   MAX_HINTS: 3
 } as const;
 
@@ -23,16 +31,24 @@ export interface GameState {
   hintsUsed: number;
   gameStatus: GameStatus;
   totalQuestions: number;
+  quizCategory: QuizCategory;
+  timeRemaining: number;
+  questionStartTime: number;
 }
 
 // Individual game question interface
 export interface GameQuestion {
   country: Country;
+  category: QuizCategory;
+  questionText: string;
+  correctAnswer: string;
   hintsAvailable: string[];
   hintsRevealed: string[];
   attempts: string[];
   isCompleted: boolean;
   pointsAwarded: number;
+  timeUsed: number;
+  startTime: number;
 }
 
 // Hint level configuration

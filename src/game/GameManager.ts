@@ -1,4 +1,4 @@
-import { GameState, GameStatus, GameSession } from '../types/game';
+import { GameState, GameStatus, GameSession, QuizCategory, SCORING } from '../types/game';
 import { Country, getRandomCountry } from '../data/countries';
 import { QuestionManager } from './QuestionManager';
 import { ScoreManager } from './ScoreManager';
@@ -12,6 +12,10 @@ export class GameManager {
   private answerValidator: AnswerValidator;
   private progressTracker: GameProgressTracker;
   private usedCountries: Set<string> = new Set();
+  private timerInterval: NodeJS.Timeout | null = null;
+  
+  // Callback for timer updates
+  public onTimerUpdate: (timeRemaining: number) => void = () => {};
 
   constructor() {
     this.questionManager = new QuestionManager();
@@ -24,15 +28,19 @@ export class GameManager {
       currentScore: 0,
       hintsUsed: 0,
       gameStatus: GameStatus.WAITING,
-      totalQuestions: 0
+      totalQuestions: 0,
+      quizCategory: QuizCategory.COUNTRY_TO_CAPITAL,
+      timeRemaining: SCORING.TIME_LIMIT,
+      questionStartTime: 0
     };
   }
 
   /**
    * Starts a new game session
    */
-  public startGame(): void {
+  public startGame(category: QuizCategory = QuizCategory.COUNTRY_TO_CAPITAL): void {
     this.resetGame();
+    this.gameState.quizCategory = category;
     this.gameState.gameStatus = GameStatus.PLAYING;
     this.nextQuestion();
   }
@@ -46,11 +54,26 @@ export class GameManager {
     }
 
     const country = this.selectNextCountry();
+    
+    // Determine the actual category for this question
+    let actualCategory = this.gameState.quizCategory;
+    if (this.gameState.quizCategory === QuizCategory.RANDOM) {
+      const categories = [
+        QuizCategory.COUNTRY_TO_CAPITAL,
+        QuizCategory.CAPITAL_TO_COUNTRY,
+        QuizCategory.FLAG_TO_COUNTRY
+      ];
+      actualCategory = categories[Math.floor(Math.random() * categories.length)];
+    }
+
     this.gameState.currentCountry = country;
     this.gameState.totalQuestions++;
     this.gameState.hintsUsed = 0;
+    this.gameState.timeRemaining = SCORING.TIME_LIMIT;
+    this.gameState.questionStartTime = Date.now();
     
-    this.questionManager.createQuestion(country);
+    this.questionManager.createQuestion(country, actualCategory);
+    this.startTimer();
   }
 
   /**
@@ -80,17 +103,26 @@ export class GameManager {
       };
     }
 
+    const currentQuestion = this.questionManager.getCurrentQuestion();
+    if (!currentQuestion) {
+      throw new Error('No current question available');
+    }
+
     const validationResult = this.answerValidator.validateAnswer(
       userInput,
-      this.gameState.currentCountry.capital
+      currentQuestion.correctAnswer
     );
 
     this.questionManager.addAttempt(userInput);
 
     if (validationResult.isCorrect) {
+      this.stopTimer();
+      const timeUsed = SCORING.TIME_LIMIT - this.gameState.timeRemaining;
       const pointsAwarded = this.questionManager.completeQuestion(true);
+      
       this.scoreManager.addScore(
         this.gameState.currentCountry.name,
+        timeUsed,
         this.gameState.hintsUsed,
         true
       );
@@ -141,9 +173,12 @@ export class GameManager {
       throw new Error('No current question to skip');
     }
 
+    this.stopTimer();
+    const timeUsed = SCORING.TIME_LIMIT - this.gameState.timeRemaining;
     this.questionManager.completeQuestion(false);
     this.scoreManager.addScore(
       this.gameState.currentCountry.name,
+      timeUsed,
       this.gameState.hintsUsed,
       false
     );
@@ -194,6 +229,9 @@ export class GameManager {
     hintsRevealed: string[];
     hintsRemaining: number;
     attempts: string[];
+    questionText?: string;
+    correctAnswer?: string;
+    category?: QuizCategory;
   } {
     const question = this.questionManager.getCurrentQuestion();
     
@@ -201,7 +239,10 @@ export class GameManager {
       country: this.gameState.currentCountry,
       hintsRevealed: question?.hintsRevealed || [],
       hintsRemaining: this.questionManager.getHintsRemaining(),
-      attempts: question?.attempts || []
+      attempts: question?.attempts || [],
+      questionText: question?.questionText,
+      correctAnswer: question?.correctAnswer,
+      category: question?.category
     };
   }
 
@@ -255,15 +296,72 @@ export class GameManager {
   }
 
   /**
+   * Gets the current time remaining
+   */
+  public getTimeRemaining(): number {
+    return this.gameState.timeRemaining;
+  }
+
+  /**
+   * Starts the timer for the current question
+   */
+  private startTimer(): void {
+    this.stopTimer(); // Clear any existing timer
+    
+    this.timerInterval = setInterval(() => {
+      this.gameState.timeRemaining--;
+      // Call the timer update callback to refresh UI
+      this.onTimerUpdate(this.gameState.timeRemaining);
+      
+      if (this.gameState.timeRemaining <= 0) {
+        this.handleTimeUp();
+      }
+    }, 1000);
+  }
+
+  /**
+   * Stops the current timer
+   */
+  private stopTimer(): void {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+  }
+
+  /**
+   * Handles when time runs out
+   */
+  private handleTimeUp(): void {
+    this.stopTimer();
+    
+    if (this.gameState.currentCountry) {
+      this.questionManager.completeQuestion(false);
+      this.scoreManager.addScore(
+        this.gameState.currentCountry.name,
+        SCORING.TIME_LIMIT,
+        this.gameState.hintsUsed,
+        false
+      );
+      this.gameState.currentScore = this.scoreManager.getCurrentScore();
+    }
+  }
+
+  /**
    * Resets the game to initial state
    */
   private resetGame(): void {
+    this.stopTimer();
+    
     this.gameState = {
       currentCountry: null,
       currentScore: 0,
       hintsUsed: 0,
       gameStatus: GameStatus.WAITING,
-      totalQuestions: 0
+      totalQuestions: 0,
+      quizCategory: QuizCategory.COUNTRY_TO_CAPITAL,
+      timeRemaining: SCORING.TIME_LIMIT,
+      questionStartTime: 0
     };
     
     this.questionManager.reset();
@@ -298,6 +396,6 @@ export class GameManager {
    * Generates a unique session ID
    */
   private generateSessionId(): string {
-    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
   }
 }

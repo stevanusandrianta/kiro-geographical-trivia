@@ -31,16 +31,21 @@ function setupEventListeners() {
   if (answerInput) {
     answerInput.addEventListener('keypress', (event) => {
       if (event.key === 'Enter') {
-        submitAnswer();
+        (window as any).submitAnswer();
       }
     });
   }
 }
 
 // Global functions for HTML onclick handlers
-(window as any).startGame = function() {
+(window as any).startGame = function(category: string = 'country_to_capital') {
   try {
-    gameManager.startGame();
+    // Set up timer update callback before starting the game
+    gameManager.onTimerUpdate = (timeRemaining) => {
+      updateElement('timer-display', timeRemaining.toString());
+    };
+    
+    gameManager.startGame(category as any);
     uiState.isPlaying = true;
     
     showScreen('game-screen');
@@ -109,11 +114,11 @@ function setupEventListeners() {
   if (!uiState.isPlaying || uiState.questionAnswered) return;
   
   try {
-    gameManager.skipQuestion();
     const currentQuestion = gameManager.getCurrentQuestion();
+    gameManager.skipQuestion();
     
     uiState.questionAnswered = true;
-    showFeedback(`⏭️ Skipped. The answer was ${currentQuestion.country?.capital}`, 'close');
+    showFeedback(`⏭️ Skipped. The answer was ${currentQuestion.correctAnswer}`, 'close');
     showCountryTrivia();
     showNextButton();
     disableGameControls();
@@ -160,9 +165,130 @@ function setupEventListeners() {
   clearAllDisplays();
 };
 
+// Explore mode functions
+(window as any).startExplore = function() {
+  showScreen('explore-screen');
+  displayCountries(countries);
+  setActiveFilter('all');
+};
+
+(window as any).filterByContinent = function(continent: string) {
+  setActiveFilter(continent);
+  
+  if (continent === 'all') {
+    displayCountries(countries);
+  } else {
+    const filteredCountries = getCountriesByContinent(continent);
+    displayCountries(filteredCountries);
+  }
+  
+  // Clear search when filtering
+  const searchInput = document.getElementById('country-search') as HTMLInputElement;
+  if (searchInput) {
+    searchInput.value = '';
+  }
+};
+
+(window as any).searchCountries = function() {
+  const searchInput = document.getElementById('country-search') as HTMLInputElement;
+  const searchTerm = searchInput.value.toLowerCase().trim();
+  
+  if (!searchTerm) {
+    // If search is empty, show all countries or current filter
+    const activeFilter = document.querySelector('.filter-btn.active')?.textContent;
+    if (activeFilter?.includes('All')) {
+      displayCountries(countries);
+    } else {
+      const continent = getActiveContinentFilter();
+      if (continent) {
+        const filteredCountries = getCountriesByContinent(continent);
+        displayCountries(filteredCountries);
+      }
+    }
+    return;
+  }
+  
+  const filteredCountries = countries.filter(country => 
+    country.name.toLowerCase().includes(searchTerm) ||
+    country.capital.toLowerCase().includes(searchTerm) ||
+    country.continent.toLowerCase().includes(searchTerm) ||
+    country.mainLanguage.toLowerCase().includes(searchTerm)
+  );
+  
+  displayCountries(filteredCountries);
+};
+
+(window as any).showCountryDetail = function(countryName: string) {
+  const country = countries.find(c => c.name === countryName);
+  if (!country) return;
+  
+  const modal = document.getElementById('country-modal');
+  const countryDetail = document.getElementById('country-detail');
+  
+  if (modal && countryDetail) {
+    const formattedPopulation = country.population.toLocaleString();
+    const formattedArea = country.area.toLocaleString();
+    
+    countryDetail.innerHTML = `
+      <div class="country-detail-header">
+        <div class="country-detail-flag">${country.flagEmoji}</div>
+        <div class="country-detail-name">${country.name}</div>
+        <div class="country-detail-capital">Capital: ${country.capital}</div>
+      </div>
+      
+      <div class="country-detail-grid">
+        <div class="trivia-item">
+          <div class="trivia-label">Continent</div>
+          <div class="trivia-value">${country.continent}</div>
+        </div>
+        <div class="trivia-item">
+          <div class="trivia-label">Sub-continent</div>
+          <div class="trivia-value">${country.subContinent}</div>
+        </div>
+        <div class="trivia-item">
+          <div class="trivia-label">Population</div>
+          <div class="trivia-value">${formattedPopulation}</div>
+        </div>
+        <div class="trivia-item">
+          <div class="trivia-label">Main Language</div>
+          <div class="trivia-value">${country.mainLanguage}</div>
+        </div>
+        <div class="trivia-item">
+          <div class="trivia-label">Currency</div>
+          <div class="trivia-value">${country.currency}</div>
+        </div>
+        <div class="trivia-item">
+          <div class="trivia-label">Area</div>
+          <div class="trivia-value">${formattedArea} km²</div>
+        </div>
+        <div class="trivia-item">
+          <div class="trivia-label">Main Airport</div>
+          <div class="trivia-value">${country.mainAirport}</div>
+        </div>
+      </div>
+    `;
+    
+    modal.style.display = 'flex';
+  }
+};
+
+(window as any).closeCountryModal = function() {
+  const modal = document.getElementById('country-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+};
+
+(window as any).backToHome = function() {
+  showScreen('start-screen');
+};
+
+// Import countries data for explore mode
+import { countries, getCountriesByContinent } from './data/countries';
+
 // UI Helper Functions
 function showScreen(screenId: string) {
-  const screens = ['start-screen', 'game-screen', 'game-over-screen'];
+  const screens = ['start-screen', 'game-screen', 'explore-screen', 'game-over-screen'];
   screens.forEach(id => {
     const element = document.getElementById(id);
     if (element) {
@@ -184,10 +310,28 @@ function updateGameDisplay() {
     updateElement('questions-answered', progress.questionsAnswered.toString());
     updateElement('score-percentage', `${Math.round(progress.scorePercentage)}%`);
     
-    // Update question display
+    // Update timer display
+    updateElement('timer-display', gameManager.getTimeRemaining().toString());
+    
+    // Update question display based on category
     if (currentQuestion.country) {
-      updateElement('country-flag', currentQuestion.country.flagEmoji);
-      updateElement('country-name', currentQuestion.country.name);
+      const questionTextElement = document.querySelector('.question-text') as HTMLElement;
+      if (questionTextElement && currentQuestion.questionText) {
+        questionTextElement.textContent = currentQuestion.questionText;
+      }
+      
+      // Update display based on quiz category
+      if (currentQuestion.category === 'flag_to_country') {
+        updateElement('country-flag', currentQuestion.country.flagEmoji);
+        updateElement('country-name', ''); // Hide country name for flag quiz
+      } else if (currentQuestion.category === 'capital_to_country') {
+        updateElement('country-flag', '🏛️'); // Generic capital icon
+        updateElement('country-name', currentQuestion.country.capital);
+      } else {
+        // Default: country_to_capital
+        updateElement('country-flag', currentQuestion.country.flagEmoji);
+        updateElement('country-name', currentQuestion.country.name);
+      }
     }
     
     // Update hint button
@@ -411,6 +555,54 @@ function disableGameControls() {
   if (skipBtn) skipBtn.disabled = true;
   if (answerInput) answerInput.disabled = true;
 }
+
+// Explore mode helper functions
+function displayCountries(countriesToShow: any[]) {
+  const grid = document.getElementById('countries-grid');
+  if (!grid) return;
+  
+  grid.innerHTML = countriesToShow.map(country => `
+    <div class="country-card" onclick="showCountryDetail('${country.name}')">
+      <div class="country-card-flag">${country.flagEmoji}</div>
+      <div class="country-card-name">${country.name}</div>
+      <div class="country-card-capital">Capital: ${country.capital}</div>
+      <div class="country-card-info">
+        ${country.continent} • ${country.population.toLocaleString()} people
+      </div>
+    </div>
+  `).join('');
+}
+
+function setActiveFilter(filterType: string) {
+  const filterButtons = document.querySelectorAll('.filter-btn');
+  filterButtons.forEach(btn => {
+    btn.classList.remove('active');
+    if (filterType === 'all' && btn.textContent?.includes('All')) {
+      btn.classList.add('active');
+    } else if (btn.textContent?.includes(filterType)) {
+      btn.classList.add('active');
+    }
+  });
+}
+
+function getActiveContinentFilter(): string | null {
+  const activeBtn = document.querySelector('.filter-btn.active');
+  if (!activeBtn || activeBtn.textContent?.includes('All')) {
+    return null;
+  }
+  
+  const text = activeBtn.textContent || '';
+  if (text.includes('Europe')) return 'Europe';
+  if (text.includes('Asia')) return 'Asia';
+  if (text.includes('Africa')) return 'Africa';
+  if (text.includes('N. America')) return 'North America';
+  if (text.includes('S. America')) return 'South America';
+  if (text.includes('Oceania')) return 'Oceania';
+  
+  return null;
+}
+
+
 
 // Export for potential external use
 export { gameManager };

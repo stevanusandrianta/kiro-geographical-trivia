@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Capital City Guessing Game</title>
 </head>
+
 <body>
     <div class="game-container">
         <div class="game-header">
@@ -15,16 +17,31 @@
         <!-- Start Screen -->
         <div id="start-screen" class="start-screen">
             <p class="start-description">
-                Welcome to the Capital City Guessing Game! 🎯<br><br>
-                You'll be shown a country and need to guess its capital city. 
-                If you get stuck, you can request hints to help you learn.<br><br>
-                <strong>Scoring:</strong><br>
-                • 3 points for correct answer without hints<br>
-                • 2 points for correct answer after 1 hint<br>
-                • 1 point for correct answer after 2+ hints<br>
-                • 0 points for incorrect answers
+                Welcome to the Geography Learning Hub! 🌍<br><br>
+                Choose your learning adventure:
             </p>
-            <button class="btn btn-primary" onclick="startGame()">Start Playing! 🚀</button>
+            <div class="mode-selection">
+                <div class="mode-card">
+                    <div class="mode-icon">🎯</div>
+                    <h3>Quiz Mode</h3>
+                    <p>Test your knowledge with timed geography challenges!</p>
+                    <div class="quiz-categories">
+                        <button class="btn btn-category" onclick="startGame('country_to_capital')">🏛️ Country →
+                            Capital</button>
+                        <button class="btn btn-category" onclick="startGame('capital_to_country')">🌍 Capital →
+                            Country</button>
+                        <button class="btn btn-category" onclick="startGame('flag_to_country')">🏳️ Flag →
+                            Country</button>
+                        <button class="btn btn-primary" onclick="startGame('random')">🎲 Random Mix</button>
+                    </div>
+                </div>
+                <div class="mode-card">
+                    <div class="mode-icon">🗺️</div>
+                    <h3>Explore Mode</h3>
+                    <p>Browse countries by continent and learn fascinating facts!</p>
+                    <button class="btn btn-secondary" onclick="startExplore()">Explore Countries</button>
+                </div>
+            </div>
         </div>
 
         <!-- Game Screen -->
@@ -40,6 +57,10 @@
                     <div class="score-label">Questions</div>
                 </div>
                 <div class="score-item">
+                    <div class="score-value" id="timer-display">10</div>
+                    <div class="score-label">Time</div>
+                </div>
+                <div class="score-item">
                     <div class="score-value" id="score-percentage">0%</div>
                     <div class="score-label">Efficiency</div>
                 </div>
@@ -52,12 +73,9 @@
                     <div class="country-name" id="country-name">Loading...</div>
                 </div>
                 <p class="question-text">What is the capital city of this country?</p>
-                
-                <input type="text" 
-                       class="answer-input" 
-                       id="answer-input" 
-                       placeholder="Enter the capital city...">
-                
+
+                <input type="text" class="answer-input" id="answer-input" placeholder="Enter the capital city...">
+
                 <div class="button-group">
                     <button class="btn btn-primary" onclick="submitAnswer()">Submit Answer</button>
                     <button class="btn btn-hint" id="hint-btn" onclick="requestHint()">Get Hint (3 left)</button>
@@ -85,8 +103,49 @@
 
             <!-- Game Controls -->
             <div class="button-group">
-                <button class="btn btn-primary" onclick="nextQuestion()" id="next-btn" style="display: none;">Next Question</button>
+                <button class="btn btn-primary" onclick="nextQuestion()" id="next-btn" style="display: none;">Next
+                    Question</button>
                 <button class="btn btn-secondary" onclick="endGame()">End Game</button>
+            </div>
+        </div>
+
+        <!-- Explore Screen -->
+        <div id="explore-screen" style="display: none;">
+            <div class="explore-header">
+                <h2>🗺️ Explore Countries</h2>
+                <p>Discover fascinating facts about countries around the world</p>
+            </div>
+
+            <!-- Continent Filter -->
+            <div class="continent-filter">
+                <button class="filter-btn active" onclick="filterByContinent('all')">All Continents</button>
+                <button class="filter-btn" onclick="filterByContinent('Europe')">🇪🇺 Europe</button>
+                <button class="filter-btn" onclick="filterByContinent('Asia')">🌏 Asia</button>
+                <button class="filter-btn" onclick="filterByContinent('Africa')">🌍 Africa</button>
+                <button class="filter-btn" onclick="filterByContinent('North America')">🌎 N. America</button>
+                <button class="filter-btn" onclick="filterByContinent('South America')">🌎 S. America</button>
+                <button class="filter-btn" onclick="filterByContinent('Oceania')">🌊 Oceania</button>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-container">
+                <input type="text" id="country-search" placeholder="🔍 Search countries..." onkeyup="searchCountries()">
+            </div>
+
+            <!-- Countries Grid -->
+            <div id="countries-grid" class="countries-grid"></div>
+
+            <!-- Country Detail Modal -->
+            <div id="country-modal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span class="close" onclick="closeCountryModal()">&times;</span>
+                    <div id="country-detail"></div>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="backToHome()">← Back to Home</button>
             </div>
         </div>
 
@@ -103,4 +162,5 @@
 
     <script type="module" src="/src/main.ts"></script>
 </body>
+
 </html>

@@ -23,27 +23,32 @@ export class ScoreManager {
   private questionCounter: number = 0;
 
   /**
-   * Calculates points based on the number of hints used
+   * Calculates points based on time used and hints used
    */
-  public calculatePoints(hintsUsed: number, isCorrect: boolean): number {
+  public calculatePoints(timeUsed: number, hintsUsed: number, isCorrect: boolean): number {
     if (!isCorrect) {
-      return SCORING.INCORRECT_AFTER_ALL_HINTS;
+      return 0;
     }
 
-    if (hintsUsed === 0) {
-      return SCORING.CORRECT_FIRST_TRY;
-    } else if (hintsUsed === 1) {
-      return SCORING.CORRECT_AFTER_ONE_HINT;
-    } else {
-      return SCORING.CORRECT_AFTER_MULTIPLE_HINTS;
-    }
+    // Base score
+    let points = SCORING.BASE_SCORE;
+    
+    // Time bonus (faster = more points)
+    const timeBonus = Math.max(0, SCORING.MAX_TIME_BONUS * (SCORING.TIME_LIMIT - timeUsed) / SCORING.TIME_LIMIT);
+    points += Math.round(timeBonus);
+    
+    // Hint penalty
+    points -= (hintsUsed * SCORING.HINT_PENALTY);
+    
+    // Minimum 1 point for correct answers
+    return Math.max(1, points);
   }
 
   /**
    * Adds points for a completed question
    */
-  public addScore(countryName: string, hintsUsed: number, isCorrect: boolean): number {
-    const points = this.calculatePoints(hintsUsed, isCorrect);
+  public addScore(countryName: string, timeUsed: number, hintsUsed: number, isCorrect: boolean): number {
+    const points = this.calculatePoints(timeUsed, hintsUsed, isCorrect);
     this.currentScore += points;
     this.questionCounter++;
 
@@ -77,7 +82,7 @@ export class ScoreManager {
    * Gets the maximum possible score for questions answered so far
    */
   public getMaxPossibleScore(): number {
-    return this.questionCounter * SCORING.CORRECT_FIRST_TRY;
+    return this.questionCounter * (SCORING.BASE_SCORE + SCORING.MAX_TIME_BONUS);
   }
 
   /**

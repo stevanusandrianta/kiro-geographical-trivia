@@ -310,6 +310,247 @@ body {
   }
 }
 
+/* Mode Selection */
+.mode-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.mode-card {
+  background: #f8f9fa;
+  border-radius: 15px;
+  padding: 2rem;
+  text-align: center;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.mode-card:hover {
+  border-color: #667eea;
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.mode-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.mode-card h3 {
+  color: #333;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.mode-card p {
+  color: #666;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.quiz-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.btn-category {
+  background: #f8f9fa;
+  color: #333;
+  border: 2px solid #ddd;
+  font-size: 0.9rem;
+  padding: 0.6rem 1rem;
+}
+
+.btn-category:hover {
+  background: #e9ecef;
+  border-color: #667eea;
+  transform: translateY(-1px);
+}
+
+/* Explore Screen */
+.explore-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.explore-header h2 {
+  color: #667eea;
+  margin-bottom: 0.5rem;
+}
+
+.explore-header p {
+  color: #666;
+}
+
+.continent-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.filter-btn {
+  padding: 0.5rem 1rem;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.filter-btn:hover {
+  border-color: #667eea;
+  background: #f0f4ff;
+}
+
+.filter-btn.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.search-container {
+  margin-bottom: 2rem;
+}
+
+.search-container input {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1rem;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  transition: border-color 0.3s;
+}
+
+.search-container input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.countries-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.country-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  border: 2px solid #f0f0f0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-align: center;
+}
+
+.country-card:hover {
+  border-color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+.country-card-flag {
+  font-size: 2.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.country-card-name {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.4rem;
+  line-height: 1.2;
+}
+
+.country-card-capital {
+  color: #667eea;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.country-card-info {
+  color: #666;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.close {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #999;
+  transition: color 0.3s;
+}
+
+.close:hover {
+  color: #333;
+}
+
+.country-detail-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.country-detail-flag {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.country-detail-name {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.country-detail-capital {
+  font-size: 1.3rem;
+  color: #667eea;
+  font-weight: 500;
+}
+
+.country-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
 @media (max-width: 600px) {
   .game-container {
     padding: 1.5rem;
@@ -330,5 +571,23 @@ body {
   .score-display {
     flex-direction: column;
     gap: 1rem;
+  }
+
+  .mode-selection {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .continent-filter {
+    justify-content: flex-start;
+  }
+
+  .countries-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-content {
+    padding: 1.5rem;
+    margin: 1rem;
   }
 }

@@ -1,4 +1,4 @@
-import { GameQuestion, SCORING } from '../types/game';
+import { GameQuestion, SCORING, QuizCategory } from '../types/game';
 import { Country } from '../data/countries';
 import { HintSystem } from './HintSystem';
 
@@ -11,20 +11,70 @@ export class QuestionManager {
   }
 
   /**
-   * Creates a new question for the given country
+   * Creates a new question for the given country and category
    */
-  public createQuestion(country: Country): GameQuestion {
+  public createQuestion(country: Country, category: QuizCategory): GameQuestion {
+    const { questionText, correctAnswer, hints } = this.generateQuestionContent(country, category);
+    
     const question: GameQuestion = {
       country,
-      hintsAvailable: this.hintSystem.generateHintsUpToLevel(country.capital, this.hintSystem.getMaxHints()),
+      category,
+      questionText,
+      correctAnswer,
+      hintsAvailable: hints,
       hintsRevealed: [],
       attempts: [],
       isCompleted: false,
-      pointsAwarded: 0
+      pointsAwarded: 0,
+      timeUsed: 0,
+      startTime: Date.now()
     };
 
     this.currentQuestion = question;
     return question;
+  }
+
+  /**
+   * Generates question content based on category
+   */
+  private generateQuestionContent(country: Country, category: QuizCategory): {
+    questionText: string;
+    correctAnswer: string;
+    hints: string[];
+  } {
+    switch (category) {
+      case QuizCategory.COUNTRY_TO_CAPITAL:
+        return {
+          questionText: `What is the capital city of ${country.name}?`,
+          correctAnswer: country.capital,
+          hints: this.hintSystem.generateHintsUpToLevel(country.capital, this.hintSystem.getMaxHints())
+        };
+      
+      case QuizCategory.CAPITAL_TO_COUNTRY:
+        return {
+          questionText: `Which country has ${country.capital} as its capital?`,
+          correctAnswer: country.name,
+          hints: this.hintSystem.generateHintsUpToLevel(country.name, this.hintSystem.getMaxHints())
+        };
+      
+      case QuizCategory.FLAG_TO_COUNTRY:
+        return {
+          questionText: `Which country does this flag belong to?`,
+          correctAnswer: country.name,
+          hints: [
+            `This country is located in ${country.continent}.`,
+            `The capital city is ${country.capital}.`,
+            `The main language is ${country.mainLanguage}.`
+          ]
+        };
+      
+      default:
+        return {
+          questionText: `What is the capital city of ${country.name}?`,
+          correctAnswer: country.capital,
+          hints: this.hintSystem.generateHintsUpToLevel(country.capital, this.hintSystem.getMaxHints())
+        };
+    }
   }
 
   /**
