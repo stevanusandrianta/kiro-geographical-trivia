@@ -3,6 +3,9 @@ import { resolve } from 'path';
 
 export default defineConfig({
   root: '.',
+  base: process.env.NODE_ENV === 'production' 
+    ? process.env.VITE_BASE_PATH || '/capital-guessing-game/' 
+    : '/',
   build: {
     outDir: 'dist',
     rollupOptions: {

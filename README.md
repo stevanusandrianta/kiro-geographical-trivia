@@ -37,12 +37,30 @@ An educational geography game built with TypeScript that helps you learn world c
 
 - `npm run dev` - Start development server with hot reload
 - `npm run build` - Build for production
+- `npm run build:gh-pages` - Build for GitHub Pages deployment
+- `npm run deploy` - Build and prepare for deployment
 - `npm run preview` - Preview production build
 - `npm test` - Run test suite
 - `npm run test:watch` - Run tests in watch mode
 - `npm run lint` - Check code quality
 - `npm run lint:fix` - Fix linting issues
 - `npm run type-check` - Check TypeScript types
+
+## 🚀 Deployment
+
+This project is configured for automatic deployment to GitHub Pages.
+
+### Automatic Deployment
+- Push to `main` branch triggers automatic deployment
+- GitHub Actions builds and deploys the project
+- Live site updates within minutes
+
+### Manual Deployment
+```bash
+npm run deploy
+```
+
+For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## 🎯 How to Play
 
