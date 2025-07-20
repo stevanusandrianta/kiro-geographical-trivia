@@ -4,7 +4,7 @@ import { resolve } from 'path';
 export default defineConfig({
   root: '.',
   base: process.env.NODE_ENV === 'production' 
-    ? process.env.VITE_BASE_PATH || '/capital-guessing-game/' 
+    ? process.env.VITE_BASE_PATH || '/' 
     : '/',
   build: {
     outDir: 'dist',
@@ -12,7 +12,8 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html')
       }
-    }
+    },
+    assetsDir: 'assets'
   },
   resolve: {
     alias: {

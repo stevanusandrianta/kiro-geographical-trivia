@@ -8,6 +8,10 @@ describe('GameManager Integration', () => {
     gameManager = new GameManager();
   });
 
+  afterEach(() => {
+    gameManager.cleanup();
+  });
+
   describe('complete game flow', () => {
     it('should handle a complete game session', () => {
       // Start game
@@ -54,7 +58,6 @@ describe('GameManager Integration', () => {
 
     it('should handle incorrect answers and hints', () => {
       gameManager.startGame();
-      const question = gameManager.getCurrentQuestion();
       
       // Submit wrong answer
       const wrongResult = gameManager.submitAnswer('WrongAnswer');

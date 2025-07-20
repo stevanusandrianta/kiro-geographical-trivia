@@ -17,6 +17,10 @@ export enum QuizCategory {
 
 // Scoring constants
 export const SCORING = {
+  CORRECT_FIRST_TRY: 3,
+  CORRECT_AFTER_ONE_HINT: 2,
+  CORRECT_AFTER_MULTIPLE_HINTS: 1,
+  INCORRECT_AFTER_ALL_HINTS: 0,
   MAX_TIME_BONUS: 5,
   BASE_SCORE: 2,
   HINT_PENALTY: 1,

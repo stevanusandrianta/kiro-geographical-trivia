@@ -48,17 +48,17 @@ An educational geography game built with TypeScript that helps you learn world c
 
 ## 🚀 Deployment
 
-This project is configured for automatic deployment to GitHub Pages.
+This project supports multiple free deployment options:
 
-### Automatic Deployment
-- Push to `main` branch triggers automatic deployment
-- GitHub Actions builds and deploys the project
-- Live site updates within minutes
-
-### Manual Deployment
+### Quick Deploy to GitHub Pages
 ```bash
 npm run deploy
 ```
+
+### Alternative Free Hosting Options
+- **Netlify** (Recommended): Automatic deployments, custom domains
+- **Vercel**: Fast deployments with great performance
+- **Manual GitHub Pages**: Simple script-based deployment
 
 For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
 

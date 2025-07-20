@@ -110,7 +110,7 @@ describe('GameProgressTracker', () => {
       // Last 5 questions: Italy(wrong), Spain(perfect), UK(good), USA(perfect), Canada(ok)
       expect(detailed.recentPerformance.lastFiveQuestions).toHaveLength(5);
       expect(detailed.recentPerformance.recentAccuracy).toBe(80); // 4/5 correct
-      expect(detailed.recentPerformance.recentAverageHints).toBe(0.8); // (2+0+1+0+2)/5
+      expect(detailed.recentPerformance.recentAverageHints).toBe(1); // (2+0+1+0+2)/5
     });
 
     it('should calculate achievements correctly', () => {
