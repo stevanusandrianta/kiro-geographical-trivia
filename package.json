@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:gh-pages": "NODE_ENV=production VITE_BASE_PATH=/$(basename $(pwd))/ npm run build",
+    "build:gh-pages": "NODE_ENV=production VITE_BASE_PATH=/kiro-geographical-trivia/ npm run build",
     "build:netlify": "NODE_ENV=production npm run build",
     "preview": "vite preview",
     "deploy": "npm run build:gh-pages && ./deploy.sh",
