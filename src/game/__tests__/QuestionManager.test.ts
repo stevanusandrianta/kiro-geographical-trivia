@@ -1,5 +1,6 @@
 import { QuestionManager } from '../QuestionManager';
 import { Country } from '../../data/countries';
+import { QuizCategory } from '../../types/game';
 import { SCORING } from '../../types/game';
 
 describe('QuestionManager', () => {
@@ -24,7 +25,7 @@ describe('QuestionManager', () => {
 
   describe('createQuestion', () => {
     it('should create a new question with all hints available', () => {
-      const question = questionManager.createQuestion(mockCountry);
+      const question = questionManager.createQuestion(mockCountry, QuizCategory.COUNTRY_TO_CAPITAL);
       
       expect(question.country).toBe(mockCountry);
       expect(question.hintsAvailable).toHaveLength(3);
@@ -35,7 +36,7 @@ describe('QuestionManager', () => {
     });
 
     it('should generate correct hints for the capital', () => {
-      const question = questionManager.createQuestion(mockCountry);
+      const question = questionManager.createQuestion(mockCountry, QuizCategory.COUNTRY_TO_CAPITAL);
       
       expect(question.hintsAvailable[0]).toBe('The capital has 5 letters.');
       expect(question.hintsAvailable[1]).toBe('The capital starts with "P".');
@@ -43,14 +44,14 @@ describe('QuestionManager', () => {
     });
 
     it('should set the question as current', () => {
-      const question = questionManager.createQuestion(mockCountry);
+      const question = questionManager.createQuestion(mockCountry, QuizCategory.COUNTRY_TO_CAPITAL);
       expect(questionManager.getCurrentQuestion()).toBe(question);
     });
   });
 
   describe('requestHint', () => {
     beforeEach(() => {
-      questionManager.createQuestion(mockCountry);
+      questionManager.createQuestion(mockCountry, QuizCategory.COUNTRY_TO_CAPITAL);
     });
 
     it('should return the first hint on first request', () => {
@@ -102,7 +103,7 @@ describe('QuestionManager', () => {
 
   describe('hint tracking methods', () => {
     beforeEach(() => {
-      questionManager.createQuestion(mockCountry);
+      questionManager.createQuestion(mockCountry, QuizCategory.COUNTRY_TO_CAPITAL);
     });
 
     it('should track hints used correctly', () => {
@@ -142,7 +143,7 @@ describe('QuestionManager', () => {
 
   describe('addAttempt', () => {
     beforeEach(() => {
-      questionManager.createQuestion(mockCountry);
+      questionManager.createQuestion(mockCountry, QuizCategory.COUNTRY_TO_CAPITAL);
     });
 
     it('should add attempts to the question', () => {
@@ -166,7 +167,7 @@ describe('QuestionManager', () => {
 
   describe('completeQuestion', () => {
     beforeEach(() => {
-      questionManager.createQuestion(mockCountry);
+      questionManager.createQuestion(mockCountry, QuizCategory.COUNTRY_TO_CAPITAL);
     });
 
     it('should award 3 points for correct answer without hints', () => {
@@ -220,7 +221,7 @@ describe('QuestionManager', () => {
     });
 
     it('should return correct stats for active question', () => {
-      questionManager.createQuestion(mockCountry);
+      questionManager.createQuestion(mockCountry, QuizCategory.COUNTRY_TO_CAPITAL);
       questionManager.requestHint();
       questionManager.addAttempt('London');
       questionManager.addAttempt('Berlin');
@@ -235,7 +236,7 @@ describe('QuestionManager', () => {
     });
 
     it('should show completed status after completion', () => {
-      questionManager.createQuestion(mockCountry);
+      questionManager.createQuestion(mockCountry, QuizCategory.COUNTRY_TO_CAPITAL);
       questionManager.completeQuestion(true);
       
       const stats = questionManager.getQuestionStats();
@@ -245,7 +246,7 @@ describe('QuestionManager', () => {
 
   describe('reset', () => {
     it('should clear the current question', () => {
-      questionManager.createQuestion(mockCountry);
+      questionManager.createQuestion(mockCountry, QuizCategory.COUNTRY_TO_CAPITAL);
       expect(questionManager.getCurrentQuestion()).not.toBeNull();
       
       questionManager.reset();

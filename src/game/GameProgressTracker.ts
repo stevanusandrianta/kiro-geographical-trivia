@@ -1,4 +1,4 @@
-import { ScoreManager, ScoreEntry, ScoreStats } from './ScoreManager';
+import { ScoreManager, ScoreEntry } from './ScoreManager';
 
 export interface ProgressDisplay {
   currentScore: number;
@@ -94,63 +94,64 @@ export class GameProgressTracker {
       return { current: 0, best: 0, type: 'none' };
     }
 
-    // Calculate current streaks
+    // Calculate current streaks from the end (most recent)
     let currentCorrectStreak = 0;
     let currentPerfectStreak = 0;
+    
+    for (let i = history.length - 1; i >= 0; i--) {
+      const entry = history[i];
+      
+      if (entry.isCorrect) {
+        currentCorrectStreak++;
+        if (entry.hintsUsed === 0) {
+          currentPerfectStreak++;
+        } else {
+          // If this correct answer used hints, we can't extend the perfect streak
+          if (currentPerfectStreak === currentCorrectStreak - 1) {
+            currentPerfectStreak = 0;
+          }
+        }
+      } else {
+        // Incorrect answer breaks both streaks
+        break;
+      }
+    }
+
+    // Calculate best streaks by going through entire history
     let bestCorrectStreak = 0;
     let bestPerfectStreak = 0;
     let tempCorrectStreak = 0;
     let tempPerfectStreak = 0;
 
-    // Calculate from the end (most recent)
-    for (let i = history.length - 1; i >= 0; i--) {
-      const entry = history[i];
-      
-      if (entry.isCorrect) {
-        if (i === history.length - 1 || currentCorrectStreak > 0) {
-          currentCorrectStreak++;
-        }
-        
-        if (entry.hintsUsed === 0) {
-          if (i === history.length - 1 || currentPerfectStreak > 0) {
-            currentPerfectStreak++;
-          }
-        } else {
-          currentPerfectStreak = 0;
-        }
-      } else {
-        currentCorrectStreak = 0;
-        currentPerfectStreak = 0;
-      }
-    }
-
-    // Calculate best streaks
     for (const entry of history) {
       if (entry.isCorrect) {
         tempCorrectStreak++;
+        bestCorrectStreak = Math.max(bestCorrectStreak, tempCorrectStreak);
+        
         if (entry.hintsUsed === 0) {
           tempPerfectStreak++;
           bestPerfectStreak = Math.max(bestPerfectStreak, tempPerfectStreak);
         } else {
           tempPerfectStreak = 0;
         }
-        bestCorrectStreak = Math.max(bestCorrectStreak, tempCorrectStreak);
       } else {
         tempCorrectStreak = 0;
         tempPerfectStreak = 0;
       }
     }
 
-    // Determine primary streak type
+    // Determine primary streak type and values
     let type: 'correct' | 'perfect' | 'none' = 'none';
     let current = 0;
     let best = 0;
 
-    if (currentPerfectStreak > 0) {
+    if (currentPerfectStreak > 0 && currentPerfectStreak === currentCorrectStreak) {
+      // All current correct answers are perfect
       type = 'perfect';
       current = currentPerfectStreak;
       best = bestPerfectStreak;
     } else if (currentCorrectStreak > 0) {
+      // We have correct answers, but not all are perfect
       type = 'correct';
       current = currentCorrectStreak;
       best = bestCorrectStreak;

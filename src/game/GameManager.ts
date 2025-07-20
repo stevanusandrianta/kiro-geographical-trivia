@@ -117,12 +117,11 @@ export class GameManager {
 
     if (validationResult.isCorrect) {
       this.stopTimer();
-      const timeUsed = SCORING.TIME_LIMIT - this.gameState.timeRemaining;
+      // const timeUsed = SCORING.TIME_LIMIT - this.gameState.timeRemaining;
       const pointsAwarded = this.questionManager.completeQuestion(true);
       
       this.scoreManager.addScore(
         this.gameState.currentCountry.name,
-        timeUsed,
         this.gameState.hintsUsed,
         true
       );
@@ -174,11 +173,10 @@ export class GameManager {
     }
 
     this.stopTimer();
-    const timeUsed = SCORING.TIME_LIMIT - this.gameState.timeRemaining;
+    // const timeUsed = SCORING.TIME_LIMIT - this.gameState.timeRemaining;
     this.questionManager.completeQuestion(false);
     this.scoreManager.addScore(
       this.gameState.currentCountry.name,
-      timeUsed,
       this.gameState.hintsUsed,
       false
     );
@@ -199,12 +197,17 @@ export class GameManager {
       sessionId: this.generateSessionId(),
       startTime: new Date(), // In a real app, this would be tracked from start
       questions: this.scoreManager.getScoreHistory().map(entry => ({
-        country: { name: entry.countryName } as Country, // Simplified for session
+        country: { name: entry.countryName } as Country,
+        category: QuizCategory.COUNTRY_TO_CAPITAL, // Default category for session
+        questionText: `What is the capital of ${entry.countryName}?`,
+        correctAnswer: 'Unknown', // Would need to be stored in score history
         hintsAvailable: [],
         hintsRevealed: [],
         attempts: [],
         isCompleted: true,
-        pointsAwarded: entry.pointsAwarded
+        pointsAwarded: entry.pointsAwarded,
+        timeUsed: 0,
+        startTime: Date.now()
       })),
       finalScore: this.scoreManager.getCurrentScore(),
       totalPossibleScore: this.scoreManager.getMaxPossibleScore(),
@@ -339,7 +342,6 @@ export class GameManager {
       this.questionManager.completeQuestion(false);
       this.scoreManager.addScore(
         this.gameState.currentCountry.name,
-        SCORING.TIME_LIMIT,
         this.gameState.hintsUsed,
         false
       );
@@ -397,5 +399,12 @@ export class GameManager {
    */
   private generateSessionId(): string {
     return `session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+  }
+
+  /**
+   * Cleanup method for tests - stops all timers
+   */
+  public cleanup(): void {
+    this.stopTimer();
   }
 }
